@@ -29,8 +29,23 @@ const api = {
 
   // 个人信息
   async loadUserInfo(args, config) {
-    return (await http.get('/userInfo', args, config)).data
-  }
+    return (await http.get('/userInfo', config)).data
+  },
+
+  // 获取验证码
+  async getSmsCode(args, config) {
+    return (await http.post('/getSmsCode', args, config)).data
+  },
+
+  // 注册
+  async register(args, config) {
+    return (await http.post('/register', args, config)).data
+  },
+
+  // 创建店铺
+  async createShop(args, config) {
+    return (await http.post('/createShop', args, config)).data
+  },
 }
 
 export default api

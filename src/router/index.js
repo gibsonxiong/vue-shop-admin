@@ -20,10 +20,38 @@ Vue.use(Router)
 
 export const routes = [
   {
+    path: '/home',
+    component: () => import('@/views/home/index'),
+    meta: {
+      
+    }
+  },
+  {
     path: '/login',
     component: () => import('@/views/login/index'),
     meta: {
       title: '登录'
+    }
+  },
+  {
+    path: '/register',
+    component: () => import('@/views/register/index'),
+    meta: {
+      title: '注册'
+    }
+  },
+  {
+    path: '/shop-create',
+    component: () => import('@/views/shop-create/index'),
+    meta: {
+      title: '创建店铺'
+    }
+  },
+  {
+    path: '/dragger',
+    component: () => import('@/views/dragger/dragger'),
+    meta: {
+      title: '创建店铺'
     }
   },
   {
@@ -36,7 +64,7 @@ export const routes = [
   {
     path: '/',
     component: Layout,
-    redirect: '/dashboard',
+    redirect: '/home',
     meta: {
       inMenu: true,
       onlyShowChildren: true
@@ -221,7 +249,7 @@ router.beforeEach(async(to, from, next) => {
 
   if (needPermission) {
     if (!token) {
-      return next('/login')
+      return next('/home')
     }
 
     let userInfo = store.state.user.userInfo

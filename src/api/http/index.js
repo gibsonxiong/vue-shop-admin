@@ -166,7 +166,7 @@ instance.interceptors.response.use(async(axiosRes) => {
 
   const needLoginCodes = [96, 97, 98]
   if ((needLoginCodes.indexOf(res.code) !== -1)) {
-    router.push('/login')
+    router.push('/home')
     services.$removeToken()
   }
   // 校验token逻辑 end

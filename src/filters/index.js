@@ -73,3 +73,13 @@ export function gender(value) {
     '1': '女'
   })[value]
 }
+
+export function orderStatus(value) {
+  return ({
+    '1': '待支付',
+    '2': '待发货',
+    '3':'待收货',
+    '4':'已完成',
+    '9':'已取消'
+  })[value]
+}

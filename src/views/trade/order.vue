@@ -9,7 +9,7 @@
       </query-item>
     </query-container> -->
 
-    <c-btn-wrap @add="handleCreate()" />
+    <!-- <c-btn-wrap @add="handleCreate()" /> -->
 
     <el-table
       v-loading="loading"
@@ -23,16 +23,33 @@
     >
       <el-table-column label="id" prop="id" width="40" />
 
-      <el-table-column label="phone" prop="phone" />
+      <el-table-column label="订单号" prop="orderNo" />
 
-      <el-table-column label="gender">
-        <template slot-scope="{row}">{{ row.gender }}</template>
-      </el-table-column>
+      <el-table-column label="收货人" prop="receiverName"/>
+
+      <el-table-column label="订单总金额" prop="orderFee"/>
+
+       <el-table-column label="下单时间" prop="createTime">
+         <template slot-scope="{row}">
+           {{row.createTime | parseTime}}
+         </template>
+       </el-table-column>
+
+        <el-table-column label="订单状态" prop="status">
+          <template slot-scope="{row}">
+            <span v-if="row.status == 1">待付款</span>
+            <span v-else-if="row.status == 2">待发货</span>
+            <span v-else-if="row.status == 3">待收货</span>
+            <span style="color:#909399" v-else-if="row.status == 4">已完成</span>
+            <span style="color:#909399" v-else-if="row.status == 5">已完成</span>
+            <span style="color:#F56C6C" v-else-if="row.status == 9">已取消</span>
+         </template>
+        </el-table-column>
 
       <el-table-column label="操作" width="150">
         <template slot-scope="{row}">
-          <el-button type="primary" size="mini" @click="handleUpdate(row)">修改</el-button>
-          <el-button type="danger" size="mini" @click="handleDelete(row)">删除</el-button>
+          <el-button type="primary" size="mini" @click="goDetail(row)">详情</el-button>
+          <el-button v-if="row.status == '2'" type="primary" size="mini" @click="handleDeliver(row)">发货</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -46,18 +63,17 @@
 
     <el-backtop />
 
-    <form-dialog
+    <DeliverDialog
       v-bind="dialog"
       :visible.sync="dialog.visible"
-      @dataCreated="handleCreated"
-      @dataUpdated="handleUpdated"
+      @dataSubmited="handleDeliverSubmited"
     />
   </div>
 </template>
 
 <script>
 import * as utils from '@/utils'
-import FormDialog from './components/order-dialog'
+import DeliverDialog from './components/order-deliver'
 
 class Query {
   // phone = "";
@@ -65,7 +81,7 @@ class Query {
 
 export default {
   components: {
-    FormDialog
+    DeliverDialog
   },
   data() {
     return {
@@ -84,9 +100,8 @@ export default {
 
       // dialog
       dialog: {
-        data: null,
+        id:'',
         visible: false,
-        type: ''
       }
     }
   },
@@ -116,37 +131,18 @@ export default {
       this.loadList()
     },
 
-    handleCreate() {
-      this.dialog.type = 'create'
+    //发货
+    handleDeliver(row) {
+      this.dialog.id=row.id;
       this.dialog.visible = true
-      this.dialog.data = {}
     },
 
-    handleCreated() {
+    handleDeliverSubmited() {
       this.loadList()
     },
 
-    handleUpdate(row) {
-      this.dialog.type = 'update'
-      this.dialog.visible = true
-      this.dialog.data = row
-    },
-
-    handleUpdated() {
-      this.loadList()
-    },
-
-    async handleDelete(row) {
-      try {
-        const res = await this.$confirm('确定要删除该条数据吗？', '提示')
-        this.deleteData(row)
-      } catch (err) {}
-    },
-
-    async deleteData(row) {
-      const res = await this.$api.order.delete({ id: row.id })
-      this.loadList()
-      this.$message.success('删除成功！')
+    goDetail(row){
+      this.$router.push(`/trade/order-detail/${row.id}`)
     }
   }
 }

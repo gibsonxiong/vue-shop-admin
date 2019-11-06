@@ -22,6 +22,11 @@ import api from '@/api'
 
 Vue.prototype.$api = api
 
+//element Tooptip没有延迟选项，所以用其他的
+import VueTippy, { TippyComponent } from 'vue-tippy'
+Vue.use(VueTippy);
+Vue.component("tippy", TippyComponent);
+
 import '@/components'
 /**
  * If you don't want to use mock-server

@@ -16,9 +16,7 @@
     "new": "plop"
   },
   "husky": {
-    "hooks": {
-
-    }
+    "hooks": {}
   },
   "lint-staged": {
     "src/**/*.{js,vue}": [
@@ -66,7 +64,8 @@
     "vue-count-to": "1.0.13",
     "vue-router": "3.0.2",
     "vue-splitpane": "1.0.4",
-    "vuedraggable": "2.20.0",
+    "vue-tippy": "^4.0.3",
+    "vuedraggable": "^2.23.2",
     "vuex": "3.1.0",
     "xlsx": "0.14.1"
   },

@@ -18,8 +18,16 @@ const router = {
         inMenu: true,
         needPermission: true
       }
+    },
+    {
+      path: 'order-detail/:orderId',
+      name: '/trade/order-detail/:orderId',
+      component: () => import('@/views/trade/order-detail'),
+      meta: {
+        title: '订单详情',
+        needPermission: true
+      }
     }
-
   ]
 }
 

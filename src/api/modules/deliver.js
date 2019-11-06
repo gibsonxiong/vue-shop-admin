@@ -1,17 +1,10 @@
 import http from '../http'
 
-const prefix = '/orders'
+const prefix = '/delivers'
 
 const api = {
   async list(args, config) {
     return (await http.get(`${prefix}`, {
-      ...config,
-      params: args
-    })).data
-  },
-
-  async detail(id, args, config) {
-    return (await http.get(`${prefix}/${id}`, {
       ...config,
       params: args
     })).data
@@ -27,11 +20,6 @@ const api = {
 
   async delete(args, config) {
     return (await http.delete(`${prefix}/${args.id}`, config)).data
-  },
-
-  //发货
-  async deliver(id, args,config){
-    return (await http.post(`${prefix}/${id}/deliver`,args, config)).data
   }
 }
 

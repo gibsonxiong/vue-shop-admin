@@ -58,7 +58,7 @@ export default {
       this.$store.dispatch('app/toggleSideBar')
     },
     async logout() {
-      this.$router.push(`/login`)
+      this.$router.push(`/home`)
     }
   }
 }

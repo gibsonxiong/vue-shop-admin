@@ -115,6 +115,7 @@ export default {
 
     createData() {
       this.$refs['form'].validate(async valid => {
+        debugger;
         if (!valid) return
 
         const res = await this.$api.category.create(this.temp.get())
@@ -127,6 +128,7 @@ export default {
 
     updateData() {
       this.$refs['form'].validate(async valid => {
+        debugger;
         if (!valid) return
 
         const res = await this.$api.category.update(this.temp.get())
