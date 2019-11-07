@@ -2,14 +2,14 @@
 @import '../draggable.scss';
 </style>
 <script>
-import draggable from "../draggable";
+import Draggable from "../draggable";
 
 export default {
   props:{
     tag:{
       type:String,
       default:'div'
-    }
+    },
   },
   render(h) {
     const slots = this.$slots.default;
@@ -17,9 +17,7 @@ export default {
   },
 
   mounted() {
-    draggable(this.$el, function(item) {
-      console.log(item);
-    });
+    new Draggable(this.$el);
   }
 };
 </script>

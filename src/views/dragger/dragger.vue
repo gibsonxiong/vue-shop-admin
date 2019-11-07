@@ -10,8 +10,8 @@ ul {
 
 li {
   cursor: move;
-  margin: 5px;
-  padding: 5px;
+  // margin: 5px;
+  padding: 2px 5px;
   font-size: 14px;
   /* margin: 30px 0; */
   /* margin-top:30px; */
@@ -27,6 +27,10 @@ li {
         <Draggable  id="ul2" tag="ul" style="background:#0f0">
           <li>item1-1</li>
           <li>item1-2</li>
+          <Draggable  id="ul2" tag="ul" style="background:#4a8">
+              <li>item1-3-1</li>
+              <li>item1-3-2</li>
+          </Draggable>
         </Draggable>
       <div id="dd">
         <button>test1</button>
