@@ -22,6 +22,9 @@ import api from '@/api'
 
 Vue.prototype.$api = api
 
+import VueSplit from 'vue-split-panel'
+Vue.use(VueSplit)
+
 //element Tooptip没有延迟选项，所以用其他的
 import VueTippy, { TippyComponent } from 'vue-tippy'
 Vue.use(VueTippy);

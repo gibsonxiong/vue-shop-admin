@@ -3,14 +3,14 @@
 
 <template>
   <div class="app-container">
-    <query-container @query="handleQuery" @reset="handleReset">
+    <!-- <query-container @query="handleQuery" @reset="handleReset">
       <query-item label="phone">
         <el-input v-model="query.name" clearable @keyup.enter.native="handleQuery" />
       </query-item>
       <query-item label="desc">
         <el-input v-model="query.desc" clearable @keyup.enter.native="handleQuery" />
       </query-item>
-    </query-container>
+    </query-container> -->
 
     <c-btn-wrap @add="handleCreate()" />
 

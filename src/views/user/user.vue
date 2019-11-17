@@ -26,15 +26,15 @@
       :tree-props="{children: 'children', hasChildren: 'hasChildren'}"
     >
       <el-table-column label="id" prop="id" width="60" />
-      <el-table-column label="phone" prop="phone" />
-      <el-table-column label="password" prop="password">
-        <template slot-scope="{row}"><c-omit-text :content="row.password" /></template>
-      </el-table-column>
-      <el-table-column label="avatar" width="150">
+      <el-table-column label="avatar" width="100">
         <template slot-scope="{row}">
           <img v-if="row.avatar" :src="row.avatar" style="width:80px;">
         </template>
       </el-table-column>
+      <el-table-column label="phone" prop="phone" />
+      <!-- <el-table-column label="password" prop="password">
+        <template slot-scope="{row}"><c-omit-text :content="row.password" /></template>
+      </el-table-column> -->
       <el-table-column label="nickname" prop="nickname" />
       <el-table-column label="gender">
         <template slot-scope="{row}">{{ row.gender | gender }}</template>

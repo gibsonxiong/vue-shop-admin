@@ -127,6 +127,7 @@
                     class="header-input"
                     size="mini"
                     placeholder="全部"
+                    :disabled="!isCreate"
                     @keypress.native.enter="setAllQuantity"
                   />
                   <el-button class="header-btn" icon="el-icon-edit" circle @click="setAllQuantity" />

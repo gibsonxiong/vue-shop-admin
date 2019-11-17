@@ -1,23 +1,62 @@
 <style lang="scss">
-@import '../draggable.scss';
+@import "../draggable.scss";
 </style>
 <script>
 import Draggable from "../draggable";
 
 export default {
-  props:{
-    tag:{
-      type:String,
-      default:'div'
+  abstract: true,
+
+  props: {
+    value: {
+      type: Array,
+      required: true
     },
-  },
-  render(h) {
-    const slots = this.$slots.default;
-    return h(this.tag, {}, slots);
+    tag: {
+      type: String,
+      default: "div"
+    },
+    options: {
+      type: Object,
+      default() {
+        return {};
+      }
+    }
   },
 
+  data() {
+    return {
+      draggable: null
+    };
+  },
+
+  watch: {
+    value(value) {
+      this.draggable.refreshData(value);
+    }
+  },
+
+  render(h) {
+    const children = this.$slots.default;
+    return children && children[0];
+  },
+  methods: {
+    handleUpdate(data) {
+      data = [
+        ...data
+      ];
+      this.$emit("input", data);
+      this.$nextTick(() => {
+        this.draggable.refresh();
+      });
+    }
+  },
   mounted() {
-    new Draggable(this.$el);
+    this.draggable = new Draggable(this.$el, this.value, {
+      ...this.options,
+      autoTransfer: false,
+      onUpdate: this.handleUpdate
+    });
   }
 };
 </script>

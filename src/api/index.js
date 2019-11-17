@@ -46,6 +46,18 @@ const api = {
   async createShop(args, config) {
     return (await http.post('/createShop', args, config)).data
   },
+
+
+
+  // preview
+  async preview(args, config) {
+    return (await http.get('http://localhost:6869/preview', config)).data
+  },
+
+  // edit
+  async edit(args, config) {
+    return (await http.post('http://localhost:6869/edit', args, config)).data
+  },
 }
 
 export default api
