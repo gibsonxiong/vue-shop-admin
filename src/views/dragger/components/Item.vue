@@ -15,14 +15,10 @@
         > -->
         <component
             :is="component.componentName"
-            :class="[...component.class,
-                    component.children.length == 0 ? 'has-placeholder': null ]"
+            :class="[...component.class]"
             :style="component.style"
         >
             <Item v-for="subComponent in component.children" :key="subComponent.id" :component="subComponent"></Item>
-            <template v-if="component.children.length == 0">
-                <span class="component-placeholder">placeholder</span>
-            </template>
         </component>
     </Draggable>
 </template>

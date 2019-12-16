@@ -4,6 +4,10 @@
 <script>
 import Draggable from "../draggable";
 
+function clone(data){
+  return JSON.parse(JSON.stringify(data));
+}
+
 export default {
   abstract: true,
 
@@ -32,7 +36,11 @@ export default {
 
   watch: {
     value(value) {
-      this.draggable.refreshData(value);
+      this.draggable.setData(value);
+
+      this.$nextTick(() => {
+        this.draggable.refresh();
+      });
     }
   },
 
@@ -41,21 +49,17 @@ export default {
     return children && children[0];
   },
   methods: {
-    handleUpdate(data) {
-      data = [
-        ...data
-      ];
+    handleChange(data) {
+      // data = data;
+      // console.log('handleChange', this.$el,data);
       this.$emit("input", data);
-      this.$nextTick(() => {
-        this.draggable.refresh();
-      });
     }
   },
   mounted() {
     this.draggable = new Draggable(this.$el, this.value, {
       ...this.options,
       autoTransfer: false,
-      onUpdate: this.handleUpdate
+      onChange: this.handleChange
     });
   }
 };

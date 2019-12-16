@@ -41,6 +41,7 @@
   }
 
   .tree {
+    height: 100%;
     flex: 1;
     background: transparent;
     overflow: hidden;
@@ -147,6 +148,17 @@
   }
 }
 
+.node-class-name{
+  color: #999;
+  font-size: 12px;
+}
+
+</style>
+<style lang="scss">
+.class-input-popper {
+  display: none !important;
+}
+
 .has-placeholder{
   // background: #aaaaaa25;
   // text-align: center;
@@ -158,14 +170,12 @@
   pointer-events: none;
 }
 </style>
-<style lang="scss">
-.class-input-popper {
-  display: none !important;
-}
-</style>
 
 <template>
   <div class="c-container">
+    <div>
+
+    </div>
     <div class="main-body">
       <div class="side">
         <div class="component-wrap">
@@ -174,13 +184,14 @@
             <el-tab-pane label="原生" name="native">
               <Draggable
                 v-model="nativeComponents"
-                :options="{sortable:false,groupName:'side', moveGroupNames:['main'], cloneTo:handleCloneTo}"
+                :options="{sortable:false,groupName:'side', moveGroupNames:['tree'], cloneTo:handleCloneTo}"
               >
                 <div class="component-list">
                   <div
                     v-for="(component,index) in nativeComponents"
                     :key="index"
                     class="component-item"
+                    @dblclick="handleComponentDblclick(component)"
                   >
                     <div class="name">{{component.displayName}}</div>
                   </div>
@@ -190,7 +201,7 @@
             <el-tab-pane label="Element" name="elementui">
               <Draggable
                 v-model="components"
-                :options="{sortable:false,groupName:'side', moveGroupNames:['main'], cloneTo:handleCloneTo}"
+                :options="{sortable:false,groupName:'side', moveGroupNames:['tree'], cloneTo:handleCloneTo}"
               >
                 <div class="component-list">
                   <div v-for="(component,index) in components" :key="index" class="component-item">
@@ -214,7 +225,9 @@
                 node-key="id"
                 draggable
               ></el-tree> -->
-              <Tree :data="selectedComponents"></Tree>
+              <Tree v-model="selectedComponents" :nodeClass="nodeClass" @node-click="handleTreeNodeClick">
+                <div slot-scope="{node}">{{node.componentName}} <span class="node-class-name">{{node.class | className}}</span> </div>
+              </Tree>
             </el-tab-pane>
             <el-tab-pane label="Template" name="template">
               <el-input type="textarea" v-model="templateCode" size="mini" :rows="20" readonly></el-input>
@@ -233,8 +246,6 @@
             </Item>
           </div>
         </Draggable>
-
-        <el-button @click="preview">preview</el-button>
       </div>
 
       <div class="right">
@@ -268,6 +279,18 @@
                     <el-input size="mini" v-model="activeComponent.style.margin" />
                   </div>
                 </div>
+                <div class="attr-item">
+                  <div class="attr-label">color:</div>
+                  <div class="attr-value">
+                    <el-color-picker v-model="activeComponent.style.color"></el-color-picker>
+                  </div>
+                </div>
+                <div class="attr-item">
+                  <div class="attr-label">background:</div>
+                  <div class="attr-value">
+                    <el-color-picker v-model="activeComponent.style.background"></el-color-picker>
+                  </div>
+                </div>
               </div>
               <div class="class-wrap">
                 <h3>Class</h3>
@@ -291,6 +314,7 @@
               </div>
               <div class="props-wrap">
                 <h3>Props</h3>
+                
                 <!-- <div class="attr-item">
                   <div class="attr-label">width:</div>
                   <div class="attr-value">
@@ -329,13 +353,13 @@
 import Draggable from "./components/Draggable";
 import Tree from "./components/Tree";
 import Item from './components/Item';
-import DraggerView from "./components/dragger-view";
 import Vue from "vue";
 import ElementUI from "element-ui";
 import _ from "lodash";
 import format_html from "@/utils/format_html";
 
 function clone(obj) {
+  if(!obj) return null;
   return JSON.parse(JSON.stringify(obj));
 }
 
@@ -375,12 +399,39 @@ let initData = {
 `
 }
 
+function findItem(arr = [], childrenKey, condition){
+  let findedItem; 
+  arr.some(item=>{
+    let result = condition(item);
+
+    if(result){
+      findedItem = item;
+      return true;
+    }
+
+    let children = item[childrenKey];
+
+    findedItem = findItem(children, childrenKey, condition);
+
+    if(findedItem){
+      return true;
+    }
+  });
+
+  return findedItem;
+}
+
 let id = 0;
 export default {
   components: {
     Draggable,
     Tree,
     Item
+  },
+  filters:{
+    className(value){
+      return value.map(item=> `.${item}`).join('');
+    }
   },
   watch:{
     allCode(value){
@@ -391,9 +442,7 @@ export default {
   },
   computed: {
     activeComponent() {
-      return this.selectedComponents.find(
-        component => component.id == this.activeId
-      );
+      return findItem(this.selectedComponents, 'children', component => component.id == this.activeId);
     },
     templateCode() {
       let code = format_html(
@@ -425,7 +474,13 @@ export default {
       cssCode: initData.css,
       jsCode: initData.js,
 
-      iframeVisible:false
+      iframeVisible:false,
+
+      nodeClass:(value)=>{
+        console.log(value);
+
+        return value.id === this.activeId ? 'active': undefined;
+      }
     };
   },
   methods: {
@@ -444,8 +499,12 @@ export default {
         id: id++,
         componentName: data.componentName,
         isNative: data.isNative,
-        props: {},
-        style: {},
+        props: {
+          ...clone(data.props)
+        },
+        style: {
+          ...clone(data.style)
+        },
         class: [],
         children: []
       };
@@ -481,24 +540,26 @@ export default {
       // return code.join("");
       return ''
     },
-    async preview(){
-      let res = await this.$api.preview();
-
-      this.iframeVisible = true;
-
-      console.log('success')
-    },
-
     async edit(code){
-      let res = await this.$api.edit({code});
+      // let res = await this.$api.edit({code});
 
-      this.iframeVisible = false;
+      // this.iframeVisible = false;
 
-      this.$nextTick(()=>{
-        this.iframeVisible = true;
-      })
+      // this.$nextTick(()=>{
+      //   this.iframeVisible = true;
+      // })
 
-      console.log('success')
+      // console.log('success')
+    },
+    handleTreeNodeClick(nodeValue,nodeElem, component){
+      console.log(nodeValue, nodeElem, component);
+
+      this.activeId = nodeValue.id;
+    },
+    handleComponentDblclick(data){
+      let component = this.handleCloneTo(data);
+
+      this.selectedComponents.push(component);
     }
   },
   created() {
@@ -543,6 +604,9 @@ export default {
   //   })
 
   //   this.selectedComponents.push(div,span1,span2, span3,span4)
+  },
+  mounted(){
+    $('#accordion').collapse()
   }
 };
 </script>

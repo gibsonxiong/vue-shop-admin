@@ -22,11 +22,11 @@ function getData(elem, name) {
   return getAttr(elem, `data-${name}`);
 }
 
-function addCss(elem, className) {
+function addClass(elem, className) {
   elem.classList.add(className)
 }
 
-function removeCss(elem, className) {
+function removeClass(elem, className) {
   elem.classList.remove(className)
 }
 
@@ -40,6 +40,20 @@ function isInlineElem(elem) {
     '-webkit-inline-box',
     'inherit'
   ].indexOf(getStyle(elem, 'display')) !== -1;
+}
+
+function getParent(elem, func, startFromParent){
+  if(startFromParent){
+    elem = elem.parentElement;
+  } 
+  while(!(elem && func(elem))){
+    if(elem === document.documentElement){
+      return null;
+    }
+    elem = elem.parentElement;
+
+  }
+  return elem;
 }
 
 function getChildRects(parent, dragEl) {
@@ -98,7 +112,7 @@ export default class Draggable {
   default = {
     sortable:true,
     autoTransfer:true,
-    groupName: '$v-group1',
+    groupName: '$group1',
     offsetValue:2,
     placeholderHeight:12,
     moveGroupNames:[],
@@ -114,12 +128,12 @@ export default class Draggable {
       ...options
     };
 
+    this.sortContainer = options.sortContainerSelector ? container.querySelector(options.sortContainerSelector) : this.container;
+
     //保存实例
     window.draggables[this.id] = this;
 
-    [].slice.call(this.container.children).forEach((itemEl) => {
-      itemEl.draggable = true;
-    });
+    this.setupChild();
 
     setData(this.container,'draggable-id', this.id);
     setData(this.container, 'container-group-name', this.options.groupName);
@@ -136,9 +150,16 @@ export default class Draggable {
 
   _onDragStart = (evt) => {
     evt.stopPropagation()
+
     evt.dataTransfer.effectAllowed = 'move';
 
-    this.setDragEl(evt.target);
+    let target = evt.target;
+
+    target = getParent(target, (elem)=>{
+      return elem.draggable;
+    });
+
+    this.setDragEl(target);
 
     this.container.addEventListener('dragend', this._onDragEnd, false);
     this.container.addEventListener('dragleave', this._onDragLeave, false);
@@ -159,9 +180,14 @@ export default class Draggable {
     setData(dragEl, 'move-group-names', '');
 
     if (placeholder && placeholder.parentElement) {
-      let fromContainer = dragEl.parentElement;
+      let fromContainer = getParent(dragEl, (elem)=>{
+        return getData(elem,'container-group-name');
+      },true);
+      // let fromContainer = dragEl.parentElement;
       let fromIndex = this.findIndex(dragEl, placeholder);
-      let toContainer = placeholder.parentElement;
+      let toContainer = getParent(placeholder, (elem)=>{
+          return getData(elem,'container-group-name');
+        },true);
       let toIndex = this.findIndex(placeholder);
 
       this.patchEvent(fromContainer, fromIndex, toContainer, toIndex);
@@ -194,8 +220,6 @@ export default class Draggable {
 
     if (target === dragEl) return;
 
-    // console.log('target:', target.classList.toString(), '| container:', this.container.classList.toString()); 
-
     //不同组
     if(!this.canMoveToContainer()){
       evt.stopPropagation()
@@ -217,19 +241,19 @@ export default class Draggable {
     //item
     if (target.parentElement === this.container) {
       let dir;
-      if(bothInlineElement){
-        if (offsetLeft <= offsetValue){
-          dir = 'prev';
-        }else if(offsetRight <= offsetValue){
-          dir = 'next';
-        }
-      }else{
+      // if(bothInlineElement){
+      //   if (offsetLeft <= offsetValue){
+      //     dir = 'prev';
+      //   }else if(offsetRight <= offsetValue){
+      //     dir = 'next';
+      //   }
+      // }else{
         if (offsetTop <= offsetValue){
           dir = 'prev';
         }else if(offsetBottom <= offsetValue){
           dir = 'next';
         }
-      }
+      // }
 
       if (dir === 'prev') {
         evt.stopPropagation()
@@ -243,6 +267,7 @@ export default class Draggable {
     }
     //container
     else if(target === this.container){
+      // console.log('target:', target.classList.toString(), '| container:', this.container.classList.toString()); 
       //上
       if(offsetTop <= 1){
         // evt.stopPropagation()
@@ -289,7 +314,7 @@ export default class Draggable {
 
   findHitChild(offsetTop) {
     let _isInlineElem = isInlineElem(dragEl);
-    let childRects = getChildRects(this.container, dragEl);
+    let childRects = getChildRects(this.sortContainer, dragEl);
     // console.log(childRects)
     let findedChild = null;
     let max = 0;
@@ -314,7 +339,7 @@ export default class Draggable {
       instance.data.splice(fromIndex,1);
       instance.data.splice(fromIndex < toIndex ? toIndex-1 : toIndex,0,data);
 
-      instance.options.onUpdate && instance.options.onUpdate.call(instance,instance.data);
+      instance.options.onChange && instance.options.onChange.call(instance,instance.data);
     }else{
       const fromInstance = window.draggables[getData(fromContainer,'draggable-id')];
       const toInstance = window.draggables[getData(toContainer,'draggable-id')];
@@ -325,14 +350,23 @@ export default class Draggable {
       if(cloneData == false){
         fromInstance.data.splice(fromIndex,1);
         toInstance.data.splice(toIndex,0,data);
+        fromInstance.options.onChange && fromInstance.options.onChange.call(fromInstance,fromInstance.data);
+        toInstance.options.onChange && toInstance.options.onChange.call(toInstance,toInstance.data);
       }else{
         toInstance.data.splice(toIndex,0,cloneData);
+        toInstance.options.onChange && toInstance.options.onChange.call(toInstance,toInstance.data);
       }
 
-      fromInstance.options.onUpdate && fromInstance.options.onUpdate.call(fromInstance,fromInstance.data);
-      toInstance.options.onUpdate && toInstance.options.onUpdate.call(toInstance,toInstance.data);
 
     }
+  }
+
+  setupChild(){
+    [].slice.call(this.sortContainer.children).forEach((elem) => {
+      if(elem.draggable === false){
+        elem.draggable = true;
+      }
+    });
   }
 
   canMoveToContainer(){
@@ -363,27 +397,25 @@ export default class Draggable {
       if (refrerChild === dragEl || this.getPrevSibling(refrerChild) === dragEl) {
         removePlaceholder();
       } else {
-          this.container.insertBefore(placeholder, refrerChild)
+          this.sortContainer.insertBefore(placeholder, refrerChild)
       }
     }
     //没有refrerChild代表要移动到最后
     else {
-      if (this.container.lastElementChild === dragEl) {
+      if (this.sortContainer.lastElementChild === dragEl) {
         removePlaceholder();
       } else {
-        this.container.appendChild(placeholder);
+        this.sortContainer.appendChild(placeholder);
       }
     }
   }
 
-  refreshData(data){
+  setData(data){
     this.data = data;
   }
 
   refresh(){
-    [].slice.call(this.container.children).forEach((itemEl) => {
-      itemEl.draggable = true;
-    });
+    this.setupChild();
   }
 
   findIndex(elem, ignoreElem){
